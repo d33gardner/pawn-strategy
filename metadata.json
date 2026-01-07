@@ -1,0 +1,5 @@
+{
+  "name": "Pawn Advance Chess",
+  "description": "A strategic chess variant played only with pawns. Features automatic advancement, continuous spawning, and tactical positioning battles.",
+  "requestFramePermissions": []
+}
