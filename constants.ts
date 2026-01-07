@@ -3,7 +3,17 @@ import { Player } from './types';
 export const BOARD_SIZE = 8;
 export const MOVES_PER_TURN = 4;
 
-export const PLAYER_CONFIG = {
+interface PlayerStats {
+  name: string;
+  color: string;
+  textColor: string;
+  borderColor: string;
+  baseRow: number;
+  targetRow: number;
+  direction: number;
+}
+
+export const PLAYER_CONFIG: Record<Player, PlayerStats> = {
   [Player.WHITE]: {
     name: 'White',
     color: 'bg-white',

@@ -33,7 +33,7 @@ const Board: React.FC<BoardProps> = ({
 
   const isSpawnTarget = (x: number, y: number) => {
     if (gameState.phase !== Phase.SPAWNING) return false;
-    const row = PLAYER_CONFIG[gameState.currentPlayer].baseRow;
+    const row = PLAYER_CONFIG[gameState.currentPlayer as Player].baseRow;
     return y === row && !getPawnAt(x, y);
   };
 
@@ -96,9 +96,9 @@ const Board: React.FC<BoardProps> = ({
             }}
             className={`
               w-4/5 h-4/5 rounded-full shadow-lg flex items-center justify-center transform transition-all
-              ${PLAYER_CONFIG[pawn.owner].color} 
-              ${PLAYER_CONFIG[pawn.owner].textColor}
-              border-2 ${PLAYER_CONFIG[pawn.owner].borderColor}
+              ${PLAYER_CONFIG[pawn.owner as Player].color} 
+              ${PLAYER_CONFIG[pawn.owner as Player].textColor}
+              border-2 ${PLAYER_CONFIG[pawn.owner as Player].borderColor}
               ${isSelected ? 'scale-110 ring-4 ring-yellow-400 z-10' : ''}
               ${!isSelected && !hasMoved && 'hover:scale-105'}
               ${isTarget ? 'ring-4 ring-red-500' : '' /* Capture target */}
