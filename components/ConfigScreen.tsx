@@ -16,42 +16,40 @@ const ConfigScreen: React.FC<ConfigScreenProps> = ({ onStart }) => {
   });
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900 p-4">
-      <div className="w-full max-w-md bg-slate-800 rounded-2xl p-8 shadow-2xl border border-slate-700">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2 flex items-center justify-center gap-3">
-             <Shield className="w-10 h-10 text-emerald-400" />
-             Pawn Advance
+    <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900 p-4 overflow-y-auto">
+      <div className="w-full max-w-md bg-slate-800 rounded-2xl p-6 md:p-8 shadow-2xl border border-slate-700 my-auto">
+        <div className="text-center mb-6 md:mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 flex items-center justify-center gap-3">
+            <Shield className="w-8 h-8 md:w-10 md:h-10 text-emerald-400" />
+            Pawn Advance
           </h1>
-          <p className="text-slate-400">Tactical Pawn Warfare</p>
+          <p className="text-slate-400 text-sm md:text-base">Tactical Pawn Warfare</p>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
           {/* Game Mode */}
           <div>
             <label className="block text-slate-300 text-sm font-semibold mb-2">Opponent</label>
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => setConfig({ ...config, vsAI: true })}
-                className={`p-4 rounded-xl flex flex-col items-center gap-2 border-2 transition-all ${
-                  config.vsAI
+                className={`p-3 md:p-4 rounded-xl flex flex-col items-center gap-2 border-2 transition-all ${config.vsAI
                     ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400'
                     : 'border-slate-600 bg-slate-700/50 text-slate-400 hover:bg-slate-700'
-                }`}
+                  }`}
               >
                 <Bot size={24} />
-                <span className="font-medium">vs AI</span>
+                <span className="font-medium text-sm md:text-base">vs AI</span>
               </button>
               <button
                 onClick={() => setConfig({ ...config, vsAI: false })}
-                className={`p-4 rounded-xl flex flex-col items-center gap-2 border-2 transition-all ${
-                  !config.vsAI
+                className={`p-3 md:p-4 rounded-xl flex flex-col items-center gap-2 border-2 transition-all ${!config.vsAI
                     ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400'
                     : 'border-slate-600 bg-slate-700/50 text-slate-400 hover:bg-slate-700'
-                }`}
+                  }`}
               >
                 <User size={24} />
-                <span className="font-medium">2 Player</span>
+                <span className="font-medium text-sm md:text-base">2 Player</span>
               </button>
             </div>
           </div>
@@ -81,11 +79,10 @@ const ConfigScreen: React.FC<ConfigScreenProps> = ({ onStart }) => {
                 <button
                   key={num}
                   onClick={() => setConfig({ ...config, pawnsPerSpawn: num })}
-                  className={`flex-1 py-2 rounded-lg font-bold border transition-colors ${
-                    config.pawnsPerSpawn === num
+                  className={`flex-1 py-2 rounded-lg font-bold border transition-colors ${config.pawnsPerSpawn === num
                       ? 'bg-emerald-500 border-emerald-500 text-white'
                       : 'bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600'
-                  }`}
+                    }`}
                 >
                   {num}
                 </button>
@@ -96,24 +93,22 @@ const ConfigScreen: React.FC<ConfigScreenProps> = ({ onStart }) => {
           {/* Placement Method */}
           <div>
             <label className="block text-slate-300 text-sm font-semibold mb-2">Spawn Placement</label>
-             <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => setConfig({ ...config, placementMethod: PlacementMethod.RANDOM })}
-                className={`py-3 px-4 rounded-lg text-sm font-medium border transition-all ${
-                  config.placementMethod === PlacementMethod.RANDOM
-                     ? 'bg-blue-500/20 border-blue-500 text-blue-300'
-                     : 'bg-slate-700/50 border-slate-600 text-slate-400'
-                }`}
+                className={`py-3 px-4 rounded-lg text-sm font-medium border transition-all ${config.placementMethod === PlacementMethod.RANDOM
+                    ? 'bg-blue-500/20 border-blue-500 text-blue-300'
+                    : 'bg-slate-700/50 border-slate-600 text-slate-400'
+                  }`}
               >
                 Random
               </button>
               <button
                 onClick={() => setConfig({ ...config, placementMethod: PlacementMethod.CHOICE })}
-                className={`py-3 px-4 rounded-lg text-sm font-medium border transition-all ${
-                  config.placementMethod === PlacementMethod.CHOICE
-                     ? 'bg-purple-500/20 border-purple-500 text-purple-300'
-                     : 'bg-slate-700/50 border-slate-600 text-slate-400'
-                }`}
+                className={`py-3 px-4 rounded-lg text-sm font-medium border transition-all ${config.placementMethod === PlacementMethod.CHOICE
+                    ? 'bg-purple-500/20 border-purple-500 text-purple-300'
+                    : 'bg-slate-700/50 border-slate-600 text-slate-400'
+                  }`}
               >
                 Player Choice
               </button>

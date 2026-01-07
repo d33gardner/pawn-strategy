@@ -264,64 +264,88 @@ const App: React.FC = () => {
 
   return (
     <div className="flex flex-col md:flex-row h-screen h-[100dvh] w-full bg-slate-900 text-slate-100 overflow-hidden">
-      <div className="md:w-80 w-full bg-slate-800 border-b md:border-b-0 md:border-r border-slate-700 p-4 flex flex-col gap-4 overflow-y-auto z-10">
-        <div className="flex items-center justify-between">
-          <h1 className="font-bold text-xl flex items-center gap-2">
-            <Trophy className="text-yellow-400" size={20} /> Pawn Advance
-          </h1>
-          <button onClick={() => setShowRules(!showRules)} className="p-2 hover:bg-slate-700 rounded-full">
-            <HelpCircle size={20} className="text-slate-400" />
-          </button>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-slate-700/50 p-3 rounded-lg border border-slate-600">
-            <div className="text-xs text-slate-400 uppercase font-bold">Round</div>
-            <div className="text-2xl font-bold text-white">{gameState.currentRound} <span className="text-sm text-slate-500">/ {gameState.config.totalRounds}</span></div>
-          </div>
-          <div className="bg-slate-700/50 p-3 rounded-lg border border-slate-600">
-            <div className="text-xs text-slate-400 uppercase font-bold">Phase</div>
-            <div className="text-sm font-bold text-emerald-400 truncate">
-              {gameState.phase === Phase.PLAYING && 'Battle'}
-              {gameState.phase === Phase.ADVANCEMENT && 'Marching'}
-              {gameState.phase === Phase.SPAWNING && 'Reinforce'}
-              {gameState.phase === Phase.GAME_OVER && 'Finished'}
+      <div className="flex-1 bg-slate-900 relative flex items-center justify-center p-4 order-1 md:order-2">
+        <Board gameState={gameState} selectedPawnId={selectedPawnId} validMoves={validMoves} onSquareClick={handleSquareClick} onPawnClick={handlePawnClick} />
+      </div>
+      <div className="md:w-80 w-full bg-slate-800 border-t md:border-t-0 md:border-r border-slate-700 p-3 flex flex-col gap-3 z-10 order-2 md:order-1 shrink-0 shadow-xl md:shadow-none">
+
+        {/* Compact Dashboard Card */}
+        <div className="bg-slate-700/40 rounded-xl p-3 border border-slate-600 flex flex-col gap-3">
+
+          {/* Top Row: Meta & Controls */}
+          <div className="flex items-center justify-between border-b border-slate-600/50 pb-2">
+            <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-wider">
+              <span className="text-slate-400 bg-slate-700 px-2 py-0.5 rounded">Rd {gameState.currentRound}/{gameState.config.totalRounds}</span>
+              <span className={`px-2 py-0.5 rounded ${gameState.phase === Phase.PLAYING ? 'bg-emerald-500/20 text-emerald-400' :
+                  gameState.phase === Phase.ADVANCEMENT ? 'bg-blue-500/20 text-blue-400' :
+                    gameState.phase === Phase.SPAWNING ? 'bg-purple-500/20 text-purple-400' :
+                      'bg-red-500/20 text-red-400'
+                }`}>
+                {gameState.phase === Phase.PLAYING && 'Battle'}
+                {gameState.phase === Phase.ADVANCEMENT && 'Marching'}
+                {gameState.phase === Phase.SPAWNING && 'Reinforce'}
+                {gameState.phase === Phase.GAME_OVER && 'Finished'}
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <button onClick={() => setShowRules(!showRules)} className="p-1.5 hover:bg-slate-600 rounded text-slate-400"><HelpCircle size={16} /></button>
+              <button onClick={() => setGameState(null)} className="p-1.5 hover:bg-slate-600 rounded text-slate-400"><RefreshCw size={16} /></button>
             </div>
           </div>
+
+          {/* Scores & Turn Indicator */}
+          <div className="flex items-center justify-between gap-2">
+
+            {/* White Player */}
+            <div className={`flex-1 flex flex-col items-center p-2 rounded-lg transition-all border ${gameState.currentPlayer === Player.WHITE && gameState.phase !== Phase.GAME_OVER
+                ? 'bg-slate-100 text-slate-900 border-slate-100 shadow-lg shadow-white/10'
+                : 'bg-slate-800/50 text-slate-400 border-transparent'
+              }`}>
+              <div className="flex items-center gap-1.5 font-bold text-sm mb-1">
+                <div className={`w-2.5 h-2.5 rounded-full ${gameState.currentPlayer === Player.WHITE ? 'bg-slate-900' : 'bg-white'}`} />
+                White
+              </div>
+              <div className="text-2xl font-mono font-black leading-none">{gameState.scores[Player.WHITE]}</div>
+            </div>
+
+            {/* VS / Status */}
+            <div className="flex flex-col items-center px-1">
+              {gameState.phase === Phase.PLAYING ? (
+                <>
+                  <div className="text-[10px] font-bold text-slate-500 uppercase">Moves</div>
+                  <div className="text-xl font-bold text-emerald-400">{movesLeft}</div>
+                </>
+              ) : (
+                <div className="text-xs font-bold text-slate-500">- VS -</div>
+              )}
+            </div>
+
+            {/* Black Player */}
+            <div className={`flex-1 flex flex-col items-center p-2 rounded-lg transition-all border ${gameState.currentPlayer === Player.BLACK && gameState.phase !== Phase.GAME_OVER
+                ? 'bg-slate-600 text-white border-slate-500 shadow-lg shadow-black/20'
+                : 'bg-slate-800/50 text-slate-400 border-transparent'
+              }`}>
+              <div className="flex items-center gap-1.5 font-bold text-sm mb-1">
+                <div className="w-2.5 h-2.5 bg-slate-900 border border-slate-400 rounded-full" />
+                Black
+              </div>
+              <div className="text-2xl font-mono font-black leading-none">{gameState.scores[Player.BLACK]}</div>
+            </div>
+
+          </div>
         </div>
-        <div className="flex flex-col gap-2 bg-slate-700/30 p-4 rounded-xl border border-slate-700">
-          <div className="flex items-center justify-between">
-            <span className="flex items-center gap-2 font-bold"><div className="w-3 h-3 bg-white rounded-full"></div> White</span>
-            <span className="text-xl font-mono">{gameState.scores[Player.WHITE]}</span>
+
+        {/* Compact Log (Last Action Only) + History Toggle? */}
+        <div className="bg-slate-900/50 rounded-lg p-2 border border-slate-700/50 flex items-center justify-between gap-3 min-h-[40px]">
+          <div className="flex items-center gap-2 overflow-hidden">
+            <History size={14} className="text-slate-500 shrink-0" />
+            <div className="text-xs font-mono text-slate-300 truncate">
+              {gameState.moveHistory.length > 0 ? gameState.moveHistory[0] : <span className="text-slate-600">Game started...</span>}
+            </div>
           </div>
-          <div className="w-full h-px bg-slate-600 my-1"></div>
-          <div className="flex items-center justify-between">
-            <span className="flex items-center gap-2 font-bold"><div className="w-3 h-3 bg-slate-900 border border-slate-500 rounded-full"></div> Black</span>
-            <span className="text-xl font-mono">{gameState.scores[Player.BLACK]}</span>
-          </div>
+          {/* Could add a 'show full log' button here later if needed */}
         </div>
-        {gameState.phase === Phase.PLAYING && (
-          <div className={`p-4 rounded-xl border-l-4 shadow-lg transition-colors ${gameState.currentPlayer === Player.WHITE ? 'bg-slate-100 text-slate-900 border-slate-400' : 'bg-slate-900 text-slate-100 border-slate-600'}`}>
-            <div className="text-xs font-bold uppercase mb-1 flex items-center gap-2"><Play size={12} className="fill-current" /> Current Turn</div>
-            <div className="text-2xl font-bold">{PLAYER_CONFIG[gameState.currentPlayer].name}</div>
-            <div className="mt-2 text-sm font-medium opacity-80">Moves Remaining: {movesLeft}</div>
-          </div>
-        )}
-        {gameState.phase === Phase.ADVANCEMENT && (
-          <div className="p-4 bg-blue-500/20 border border-blue-500/50 text-blue-200 rounded-xl flex items-center gap-3 animate-pulse">
-            <FastForward size={24} />
-            <div><div className="font-bold">Marching Phase</div><div className="text-xs">Troops advancing forward...</div></div>
-          </div>
-        )}
-        <div className="flex-1 overflow-hidden flex flex-col min-h-[150px]">
-          <div className="text-xs font-bold text-slate-500 uppercase mb-2 flex items-center gap-1"><History size={12} /> Log</div>
-          <div className="flex-1 overflow-y-auto text-sm font-mono space-y-1 pr-2">
-            {gameState.moveHistory.map((log, i) => <div key={i} className="text-slate-400 border-b border-slate-700/50 pb-1 last:border-0">{log}</div>)}
-          </div>
-        </div>
-        <button onClick={() => setGameState(null)} className="mt-auto flex items-center justify-center gap-2 p-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 transition-colors"><RefreshCw size={16} /> Reset Game</button>
-      </div>
-      <div className="flex-1 bg-slate-900 relative flex items-center justify-center p-4">
-        <Board gameState={gameState} selectedPawnId={selectedPawnId} validMoves={validMoves} onSquareClick={handleSquareClick} onPawnClick={handlePawnClick} />
+
       </div>
       {gameState.phase === Phase.GAME_OVER && (
         <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
