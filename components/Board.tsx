@@ -30,11 +30,11 @@ const Board: React.FC<BoardProps> = ({
   const isMoveTarget = (x: number, y: number) => {
     return validMoves.some((m) => m.to.x === x && m.to.y === y);
   };
-  
+
   const isSpawnTarget = (x: number, y: number) => {
-     if (gameState.phase !== Phase.SPAWNING) return false;
-     const row = PLAYER_CONFIG[gameState.currentPlayer].baseRow;
-     return y === row && !getPawnAt(x, y);
+    if (gameState.phase !== Phase.SPAWNING) return false;
+    const row = PLAYER_CONFIG[gameState.currentPlayer].baseRow;
+    return y === row && !getPawnAt(x, y);
   };
 
   const renderSquare = (x: number, y: number) => {
@@ -43,7 +43,7 @@ const Board: React.FC<BoardProps> = ({
     const isSpawn = isSpawnTarget(x, y);
     const isSelected = pawn && pawn.id === selectedPawnId;
     const hasMoved = pawn && gameState.movedPawnIds.includes(pawn.id);
-    
+
     // Logic to show pawns that CANNOT move as dimmed/disabled
     const isCurrentPlayerPawn = pawn && pawn.owner === gameState.currentPlayer;
     const isTurn = gameState.phase === Phase.PLAYING;
@@ -51,7 +51,7 @@ const Board: React.FC<BoardProps> = ({
 
     // Coordinate labels
     const showRank = x === 0;
-    const showFile = y === 0; 
+    const showFile = y === 0;
 
     return (
       <div
@@ -67,13 +67,13 @@ const Board: React.FC<BoardProps> = ({
       >
         {/* Labels */}
         {showRank && (
-          <span className={`absolute top-0.5 left-0.5 text-[10px] font-bold ${getSquareColor(x,y).includes('700') ? 'text-slate-400' : 'text-slate-500'}`}>
+          <span className={`absolute top-0.5 left-0.5 text-[10px] font-bold ${getSquareColor(x, y).includes('700') ? 'text-slate-400' : 'text-slate-500'}`}>
             {y + 1}
           </span>
         )}
         {showFile && (
-          <span className={`absolute bottom-0 right-1 text-[10px] font-bold ${getSquareColor(x,y).includes('700') ? 'text-slate-400' : 'text-slate-500'}`}>
-             {String.fromCharCode(97 + x)}
+          <span className={`absolute bottom-0 right-1 text-[10px] font-bold ${getSquareColor(x, y).includes('700') ? 'text-slate-400' : 'text-slate-500'}`}>
+            {String.fromCharCode(97 + x)}
           </span>
         )}
 
@@ -81,10 +81,10 @@ const Board: React.FC<BoardProps> = ({
         {isTarget && !pawn && (
           <div className="w-4 h-4 rounded-full bg-green-500 opacity-60 pointer-events-none" />
         )}
-        
+
         {/* Spawn Indicator */}
         {isSpawn && (
-             <div className="w-4 h-4 rounded-full bg-blue-500 opacity-40 animate-pulse pointer-events-none" />
+          <div className="w-4 h-4 rounded-full bg-blue-500 opacity-40 animate-pulse pointer-events-none" />
         )}
 
         {/* Pawn */}
@@ -105,12 +105,12 @@ const Board: React.FC<BoardProps> = ({
               ${shouldDim ? 'opacity-50 cursor-not-allowed grayscale' : ''}
             `}
           >
-             {/* Icon or Graphic */}
-             <div className="flex flex-col items-center -space-y-1 pointer-events-none">
-                <div className="w-3 h-3 rounded-full bg-current opacity-80" />
-                <div className="w-5 h-3 rounded-t-full bg-current" />
-                <div className="w-6 h-1 rounded-full bg-current" />
-             </div>
+            {/* Icon or Graphic */}
+            <div className="flex flex-col items-center -space-y-1 pointer-events-none">
+              <div className="w-3 h-3 rounded-full bg-current opacity-80" />
+              <div className="w-5 h-3 rounded-t-full bg-current" />
+              <div className="w-6 h-1 rounded-full bg-current" />
+            </div>
           </div>
         )}
       </div>
@@ -132,11 +132,11 @@ const Board: React.FC<BoardProps> = ({
   }
 
   return (
-    <div className="aspect-square w-full max-w-[600px] bg-slate-800 p-2 rounded-lg shadow-2xl border border-slate-700">
+    <div className="aspect-square w-full max-w-[600px] max-h-full bg-slate-800 p-2 rounded-lg shadow-2xl border border-slate-700 flex flex-col justify-center">
       <div className="flex flex-col w-full h-full border-2 border-slate-600 rounded overflow-hidden">
         {rows}
       </div>
-      
+
       {/* Turn Indicator Overlay for Spawning */}
       {gameState.phase === Phase.SPAWNING && (
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-blue-600 text-white px-6 py-3 rounded-xl shadow-xl z-20 animate-bounce pointer-events-none">
