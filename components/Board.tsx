@@ -33,8 +33,8 @@ const Board: React.FC<BoardProps> = ({
 
   const isSpawnTarget = (x: number, y: number) => {
     if (gameState.phase !== Phase.SPAWNING) return false;
-    const row = PLAYER_CONFIG[gameState.currentPlayer as Player].baseRow;
-    return y === row && !getPawnAt(x, y);
+    const spawnRows = PLAYER_CONFIG[gameState.currentPlayer as Player].spawnRows;
+    return spawnRows.includes(y) && !getPawnAt(x, y);
   };
 
   const renderSquare = (x: number, y: number) => {
@@ -137,12 +137,7 @@ const Board: React.FC<BoardProps> = ({
         {rows}
       </div>
 
-      {/* Turn Indicator Overlay for Spawning */}
-      {gameState.phase === Phase.SPAWNING && (
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-blue-600 text-white px-6 py-3 rounded-xl shadow-xl z-20 animate-bounce pointer-events-none">
-          Place your Pawn ({gameState.spawnQueue[gameState.currentPlayer]} left)
-        </div>
-      )}
+
     </div>
   );
 };

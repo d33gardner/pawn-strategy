@@ -31,7 +31,7 @@ const App: React.FC = () => {
       pawns.push({
         id: uuidv4(),
         owner: Player.WHITE,
-        position: { x, y: 0 },
+        position: { x, y: 1 }, // Start on 2nd row
         hasMoved: false,
       });
     }
@@ -39,7 +39,7 @@ const App: React.FC = () => {
       pawns.push({
         id: uuidv4(),
         owner: Player.BLACK,
-        position: { x, y: BOARD_SIZE - 1 },
+        position: { x, y: BOARD_SIZE - 2 }, // Start on 2nd to last row
         hasMoved: false,
       });
     }
@@ -61,7 +61,17 @@ const App: React.FC = () => {
   };
 
   const handlePawnClick = (pawn: Pawn) => {
-    if (!gameState || gameState.phase !== Phase.PLAYING) return;
+    if (!gameState) return;
+
+    // Handle Removing New Spawns (Undo)
+    if (gameState.phase === Phase.SPAWNING && pawn.isNew && pawn.owner === gameState.currentPlayer) {
+      const newBoard = gameState.board.filter(p => p.id !== pawn.id);
+      const newQueue = { ...gameState.spawnQueue, [pawn.owner]: gameState.spawnQueue[pawn.owner] + 1 };
+      setGameState({ ...gameState, board: newBoard, spawnQueue: newQueue });
+      return;
+    }
+
+    if (gameState.phase !== Phase.PLAYING) return;
     if (selectedPawnId && pawn.owner !== gameState.currentPlayer) {
       const move = validMoves.find((m) => m.to.x === pawn.position.x && m.to.y === pawn.position.y && m.isCapture);
       if (move) {
@@ -143,9 +153,33 @@ const App: React.FC = () => {
       if (gameState.currentPlayer === Player.WHITE) {
         nextPlayer = Player.BLACK;
       } else {
+        // End of Black's turn -> Go to Spawning (Skip March)
+        nextPhase = Phase.SPAWNING;
         nextPlayer = Player.WHITE;
-        nextPhase = Phase.ADVANCEMENT;
+
+        // Prepare spawn queue for next round
+        const pawnsToSpawn = gameState.config.pawnsPerSpawn;
+
+        // We need to update state differently here because we are skipping performAdvancement
+        // But wait, executeMove sets state. We need to handle the phase transition correctly.
+        // Actually, if we skip 'The March', we should trigger the "Start of Next Round" logic here.
+
+        // Let's modify the logic below to handle the round transition immediately
       }
+    }
+
+    // Logic shift: If it's end of round (Black finished), we need to set up Spawning
+    let newSpawnQueue = gameState.spawnQueue;
+    let newRound = gameState.currentRound;
+
+    if (nextPhase === Phase.SPAWNING) {
+      // Start new round
+      newRound += 1;
+      const pawnsToSpawn = gameState.config.pawnsPerSpawn;
+      newSpawnQueue = { [Player.WHITE]: pawnsToSpawn, [Player.BLACK]: pawnsToSpawn };
+
+      // Note: In original code, performAdvancement did round increment.
+      // Now we do it here.
     }
 
     setGameState({
@@ -157,6 +191,8 @@ const App: React.FC = () => {
       movesMadeInTurn: nextMovesMade,
       movedPawnIds: nextMovedPawnIds,
       moveHistory: [log, ...gameState.moveHistory],
+      spawnQueue: newSpawnQueue,
+      currentRound: newRound,
     });
 
     setSelectedPawnId(null);
@@ -166,8 +202,10 @@ const App: React.FC = () => {
   useEffect(() => {
     if (!gameState) return;
     if (gameState.phase === Phase.ADVANCEMENT) {
-      const timer = setTimeout(() => performAdvancement(), 1000);
-      return () => clearTimeout(timer);
+      // Deprecated phase, but keeping check just in case state gets weird, 
+      // forcing a move to spawning if it happens.
+      setGameState({ ...gameState, phase: Phase.SPAWNING });
+      return;
     }
     if (gameState.phase === Phase.SPAWNING) {
       if (gameState.currentPlayer === Player.BLACK && gameState.config.vsAI) {
@@ -203,14 +241,18 @@ const App: React.FC = () => {
 
   const spawnRandomly = (board: Pawn[], player: Player, count: number): Pawn[] => {
     let currentBoard = [...board];
-    const baseRow = PLAYER_CONFIG[player].baseRow;
-    const emptySpots: number[] = [];
-    for (let x = 0; x < BOARD_SIZE; x++) {
-      if (!GameLogic.getPawnAt(currentBoard, { x, y: baseRow })) emptySpots.push(x);
-    }
+    const spawnRows = PLAYER_CONFIG[player].spawnRows;
+    const emptySpots: { x: number, y: number }[] = [];
+
+    spawnRows.forEach(y => {
+      for (let x = 0; x < BOARD_SIZE; x++) {
+        if (!GameLogic.getPawnAt(currentBoard, { x, y })) emptySpots.push({ x, y });
+      }
+    });
+
     const spotsToSpawn = emptySpots.sort(() => 0.5 - Math.random()).slice(0, count);
-    spotsToSpawn.forEach(x => {
-      currentBoard.push({ id: uuidv4(), owner: player, position: { x, y: baseRow }, isNew: true, hasMoved: false });
+    spotsToSpawn.forEach(pos => {
+      currentBoard.push({ id: uuidv4(), owner: player, position: pos, isNew: true, hasMoved: false });
     });
     return currentBoard;
   };
@@ -225,8 +267,9 @@ const App: React.FC = () => {
   const handleManualSpawn = (pos: Position) => {
     if (!gameState) return;
     const player = gameState.currentPlayer;
-    const baseRow = PLAYER_CONFIG[player].baseRow;
-    if (pos.y !== baseRow || GameLogic.getPawnAt(gameState.board, pos)) return;
+    const spawnRows = PLAYER_CONFIG[player].spawnRows;
+
+    if (!spawnRows.includes(pos.y) || GameLogic.getPawnAt(gameState.board, pos)) return;
 
     const newBoard = [...gameState.board, { id: uuidv4(), owner: player, position: pos, isNew: true, hasMoved: false }];
     const newQueue = { ...gameState.spawnQueue, [player]: gameState.spawnQueue[player] - 1 };
@@ -266,6 +309,29 @@ const App: React.FC = () => {
     <div className="flex flex-col md:flex-row h-screen h-[100dvh] w-full bg-slate-900 text-slate-100 overflow-hidden">
       <div className="flex-1 bg-slate-900 relative flex items-center justify-center p-4 order-1 md:order-2">
         <Board gameState={gameState} selectedPawnId={selectedPawnId} validMoves={validMoves} onSquareClick={handleSquareClick} onPawnClick={handlePawnClick} />
+
+        {/* Spawn Phase Overlay & Controls */}
+        {gameState.phase === Phase.SPAWNING && (
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-3 z-30 w-full pointer-events-none">
+            {gameState.spawnQueue[gameState.currentPlayer] > 0 ? (
+              <div className="bg-blue-600/90 backdrop-blur-sm text-white px-6 py-3 rounded-xl shadow-xl animate-bounce font-bold tracking-wide">
+                Place {gameState.spawnQueue[gameState.currentPlayer]} Pawns
+              </div>
+            ) : (
+              <button
+                onClick={() => finishSpawnTurn(gameState.board, gameState.currentPlayer)}
+                className="pointer-events-auto bg-emerald-500 hover:bg-emerald-400 text-white text-lg font-bold py-3 px-8 rounded-full shadow-2xl shadow-emerald-500/20 transition-all transform hover:scale-105 active:scale-95 flex items-center gap-2"
+              >
+                <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                Finish Placing
+              </button>
+            )}
+
+            <div className="text-xs text-white/50 font-mono bg-black/40 px-2 py-1 rounded pointer-events-auto">
+              Tap newly placed pawn to undo
+            </div>
+          </div>
+        )}
       </div>
       <div className="md:w-80 w-full bg-slate-800 border-t md:border-t-0 md:border-r border-slate-700 p-3 flex flex-col gap-3 z-10 order-2 md:order-1 shrink-0 shadow-xl md:shadow-none">
 
@@ -351,6 +417,16 @@ const App: React.FC = () => {
         <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-slate-800 border border-slate-600 p-8 rounded-2xl shadow-2xl max-w-md w-full text-center">
             <h2 className="text-3xl font-bold text-white mb-2">{gameState.winner === 'DRAW' ? 'Draw!' : `${PLAYER_CONFIG[gameState.winner as Player].name} Wins!`}</h2>
+            <div className="flex justify-center gap-8 my-6">
+              <div className="text-center">
+                <div className="text-slate-400 text-sm uppercase font-bold">White</div>
+                <div className="text-4xl font-mono font-black text-white">{gameState.scores[Player.WHITE]}</div>
+              </div>
+              <div className="text-center">
+                <div className="text-slate-400 text-sm uppercase font-bold">Black</div>
+                <div className="text-4xl font-mono font-black text-slate-400">{gameState.scores[Player.BLACK]}</div>
+              </div>
+            </div>
             <p className="text-slate-400 mb-8">{gameState.winReason}</p>
             <button onClick={() => setGameState(null)} className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded-xl transition-all">Play Again</button>
           </div>
@@ -379,15 +455,11 @@ const App: React.FC = () => {
               </div>
 
               <div className="bg-slate-700/50 p-3 rounded-lg border border-slate-600">
-                <h3 className="text-blue-400 font-bold mb-1">Phase 2: The March</h3>
-                <p>After both players finish their turns, <strong>ALL pawns advance 1 square forward</strong> automatically.</p>
-                <p className="text-xs text-slate-400 mt-1">If a pawn is blocked by an enemy during the march, they battle (mutual destruction or bounce depending on rules - currently simplified to block).</p>
+                <h3 className="text-blue-400 font-bold mb-1">Phase 2: Reinforcements</h3>
+                <p>New pawns spawn at your base (Row 1 or 2) to replace troops.</p>
               </div>
 
-              <div className="bg-slate-700/50 p-3 rounded-lg border border-slate-600">
-                <h3 className="text-purple-400 font-bold mb-1">Phase 3: Reinforcements</h3>
-                <p>New pawns spawn at your base row to replace fallen troops.</p>
-              </div>
+              {/* Phase 3 Removed */}
             </div>
           </div>
         </div>

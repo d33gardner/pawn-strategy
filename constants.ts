@@ -11,6 +11,7 @@ interface PlayerStats {
   baseRow: number;
   targetRow: number;
   direction: number;
+  spawnRows: number[];
 }
 
 export const PLAYER_CONFIG: Record<Player, PlayerStats> = {
@@ -22,6 +23,7 @@ export const PLAYER_CONFIG: Record<Player, PlayerStats> = {
     baseRow: 0,
     targetRow: 7,
     direction: 1, // Moves +y
+    spawnRows: [0, 1],
   },
   [Player.BLACK]: {
     name: 'Black',
@@ -31,5 +33,6 @@ export const PLAYER_CONFIG: Record<Player, PlayerStats> = {
     baseRow: 7,
     targetRow: 0,
     direction: -1, // Moves -y
+    spawnRows: [7, 6],
   },
 };
