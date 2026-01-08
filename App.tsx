@@ -277,9 +277,9 @@ const App: React.FC = () => {
             <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-wider">
               <span className="text-slate-400 bg-slate-700 px-2 py-0.5 rounded">Rd {gameState.currentRound}/{gameState.config.totalRounds}</span>
               <span className={`px-2 py-0.5 rounded ${gameState.phase === Phase.PLAYING ? 'bg-emerald-500/20 text-emerald-400' :
-                  gameState.phase === Phase.ADVANCEMENT ? 'bg-blue-500/20 text-blue-400' :
-                    gameState.phase === Phase.SPAWNING ? 'bg-purple-500/20 text-purple-400' :
-                      'bg-red-500/20 text-red-400'
+                gameState.phase === Phase.ADVANCEMENT ? 'bg-blue-500/20 text-blue-400' :
+                  gameState.phase === Phase.SPAWNING ? 'bg-purple-500/20 text-purple-400' :
+                    'bg-red-500/20 text-red-400'
                 }`}>
                 {gameState.phase === Phase.PLAYING && 'Battle'}
                 {gameState.phase === Phase.ADVANCEMENT && 'Marching'}
@@ -298,8 +298,8 @@ const App: React.FC = () => {
 
             {/* White Player */}
             <div className={`flex-1 flex flex-col items-center p-2 rounded-lg transition-all border ${gameState.currentPlayer === Player.WHITE && gameState.phase !== Phase.GAME_OVER
-                ? 'bg-slate-100 text-slate-900 border-slate-100 shadow-lg shadow-white/10'
-                : 'bg-slate-800/50 text-slate-400 border-transparent'
+              ? 'bg-slate-100 text-slate-900 border-slate-100 shadow-lg shadow-white/10'
+              : 'bg-slate-800/50 text-slate-400 border-transparent'
               }`}>
               <div className="flex items-center gap-1.5 font-bold text-sm mb-1">
                 <div className={`w-2.5 h-2.5 rounded-full ${gameState.currentPlayer === Player.WHITE ? 'bg-slate-900' : 'bg-white'}`} />
@@ -322,8 +322,8 @@ const App: React.FC = () => {
 
             {/* Black Player */}
             <div className={`flex-1 flex flex-col items-center p-2 rounded-lg transition-all border ${gameState.currentPlayer === Player.BLACK && gameState.phase !== Phase.GAME_OVER
-                ? 'bg-slate-600 text-white border-slate-500 shadow-lg shadow-black/20'
-                : 'bg-slate-800/50 text-slate-400 border-transparent'
+              ? 'bg-slate-600 text-white border-slate-500 shadow-lg shadow-black/20'
+              : 'bg-slate-800/50 text-slate-400 border-transparent'
               }`}>
               <div className="flex items-center gap-1.5 font-bold text-sm mb-1">
                 <div className="w-2.5 h-2.5 bg-slate-900 border border-slate-400 rounded-full" />
@@ -364,12 +364,30 @@ const App: React.FC = () => {
               <button onClick={() => setShowRules(false)} className="text-slate-400 hover:text-white">✕</button>
             </div>
             <div className="space-y-4 text-sm text-slate-300">
-              <p><strong className="text-white">Goal:</strong> Reach the opponent's back row OR capture the most pawns.</p>
-              <ul className="list-disc pl-5 space-y-1">
-                <li><strong>Movement:</strong> 4 moves per turn. Each pawn moves once.</li>
-                <li><strong>The March:</strong> After every round, all pawns automatically advance 1 square unless blocked by an enemy or collision.</li>
-                <li><strong>Reinforcements:</strong> New units (1-4) spawn on your back row every round.</li>
-              </ul>
+              <div>
+                <h3 className="text-white font-bold mb-2 text-lg">Objective</h3>
+                <p>Win by moving a pawn to the opponent's back row (Target Row) OR by having the highest score after all rounds.</p>
+              </div>
+
+              <div className="bg-slate-700/50 p-3 rounded-lg border border-slate-600">
+                <h3 className="text-emerald-400 font-bold mb-1">Phase 1: Battle</h3>
+                <p>You have <strong>4 moves</strong> per turn. Select a pawn and move it to an adjacent square (diagonal capture).</p>
+                <ul className="list-disc pl-4 mt-2 text-slate-400 text-xs space-y-1">
+                  <li>Pawns can only move once per turn.</li>
+                  <li>Capturing an enemy earns <strong>1 point</strong>.</li>
+                </ul>
+              </div>
+
+              <div className="bg-slate-700/50 p-3 rounded-lg border border-slate-600">
+                <h3 className="text-blue-400 font-bold mb-1">Phase 2: The March</h3>
+                <p>After both players finish their turns, <strong>ALL pawns advance 1 square forward</strong> automatically.</p>
+                <p className="text-xs text-slate-400 mt-1">If a pawn is blocked by an enemy during the march, they battle (mutual destruction or bounce depending on rules - currently simplified to block).</p>
+              </div>
+
+              <div className="bg-slate-700/50 p-3 rounded-lg border border-slate-600">
+                <h3 className="text-purple-400 font-bold mb-1">Phase 3: Reinforcements</h3>
+                <p>New pawns spawn at your base row to replace fallen troops.</p>
+              </div>
             </div>
           </div>
         </div>

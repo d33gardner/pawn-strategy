@@ -18,7 +18,13 @@ const ConfigScreen: React.FC<ConfigScreenProps> = ({ onStart }) => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900 p-4 overflow-y-auto">
       <div className="w-full max-w-md bg-slate-800 rounded-2xl p-6 md:p-8 shadow-2xl border border-slate-700 my-auto">
-        <div className="text-center mb-6 md:mb-8">
+        <div className="text-center mb-6 md:mb-8 relative">
+          <button
+            onClick={() => window.alert("Rules:\n1. Move 4 pawns per turn.\n2. Pawns advance automatically after each round.\n3. Goal: Reach the end or capture more pawns.")}
+            className="absolute right-0 top-0 p-2 text-slate-500 hover:text-white md:hidden"
+          >
+            <Shield size={20} />
+          </button>
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 flex items-center justify-center gap-3">
             <Shield className="w-8 h-8 md:w-10 md:h-10 text-emerald-400" />
             Pawn Advance
@@ -34,8 +40,8 @@ const ConfigScreen: React.FC<ConfigScreenProps> = ({ onStart }) => {
               <button
                 onClick={() => setConfig({ ...config, vsAI: true })}
                 className={`p-3 md:p-4 rounded-xl flex flex-col items-center gap-2 border-2 transition-all ${config.vsAI
-                    ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400'
-                    : 'border-slate-600 bg-slate-700/50 text-slate-400 hover:bg-slate-700'
+                  ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400'
+                  : 'border-slate-600 bg-slate-700/50 text-slate-400 hover:bg-slate-700'
                   }`}
               >
                 <Bot size={24} />
@@ -44,8 +50,8 @@ const ConfigScreen: React.FC<ConfigScreenProps> = ({ onStart }) => {
               <button
                 onClick={() => setConfig({ ...config, vsAI: false })}
                 className={`p-3 md:p-4 rounded-xl flex flex-col items-center gap-2 border-2 transition-all ${!config.vsAI
-                    ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400'
-                    : 'border-slate-600 bg-slate-700/50 text-slate-400 hover:bg-slate-700'
+                  ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400'
+                  : 'border-slate-600 bg-slate-700/50 text-slate-400 hover:bg-slate-700'
                   }`}
               >
                 <User size={24} />
@@ -80,8 +86,8 @@ const ConfigScreen: React.FC<ConfigScreenProps> = ({ onStart }) => {
                   key={num}
                   onClick={() => setConfig({ ...config, pawnsPerSpawn: num })}
                   className={`flex-1 py-2 rounded-lg font-bold border transition-colors ${config.pawnsPerSpawn === num
-                      ? 'bg-emerald-500 border-emerald-500 text-white'
-                      : 'bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600'
+                    ? 'bg-emerald-500 border-emerald-500 text-white'
+                    : 'bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600'
                     }`}
                 >
                   {num}
@@ -97,8 +103,8 @@ const ConfigScreen: React.FC<ConfigScreenProps> = ({ onStart }) => {
               <button
                 onClick={() => setConfig({ ...config, placementMethod: PlacementMethod.RANDOM })}
                 className={`py-3 px-4 rounded-lg text-sm font-medium border transition-all ${config.placementMethod === PlacementMethod.RANDOM
-                    ? 'bg-blue-500/20 border-blue-500 text-blue-300'
-                    : 'bg-slate-700/50 border-slate-600 text-slate-400'
+                  ? 'bg-blue-500/20 border-blue-500 text-blue-300'
+                  : 'bg-slate-700/50 border-slate-600 text-slate-400'
                   }`}
               >
                 Random
@@ -106,8 +112,8 @@ const ConfigScreen: React.FC<ConfigScreenProps> = ({ onStart }) => {
               <button
                 onClick={() => setConfig({ ...config, placementMethod: PlacementMethod.CHOICE })}
                 className={`py-3 px-4 rounded-lg text-sm font-medium border transition-all ${config.placementMethod === PlacementMethod.CHOICE
-                    ? 'bg-purple-500/20 border-purple-500 text-purple-300'
-                    : 'bg-slate-700/50 border-slate-600 text-slate-400'
+                  ? 'bg-purple-500/20 border-purple-500 text-purple-300'
+                  : 'bg-slate-700/50 border-slate-600 text-slate-400'
                   }`}
               >
                 Player Choice
