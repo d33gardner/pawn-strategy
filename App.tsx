@@ -13,6 +13,7 @@ import {
 import { BOARD_SIZE, MOVES_PER_TURN, PLAYER_CONFIG } from './constants';
 import * as GameLogic from './services/gameLogic';
 import * as AI from './services/ai';
+import { StatsService } from './services/statsService';
 import Board from './components/Board';
 import ConfigScreen from './components/ConfigScreen';
 import { RefreshCw, Trophy, AlertTriangle, Play, FastForward, History, HelpCircle, Users } from 'lucide-react';
@@ -23,9 +24,12 @@ const App: React.FC = () => {
   const [selectedPawnId, setSelectedPawnId] = useState<string | null>(null);
   const [validMoves, setValidMoves] = useState<Move[]>([]);
   const [showRules, setShowRules] = useState(false);
+  const [userEmail, setUserEmail] = useState<string>('');
 
   // --- Initialization ---
-  const initGame = (config: GameConfig) => {
+  const initGame = (config: GameConfig, email?: string) => {
+    if (email) setUserEmail(email);
+
     const pawns: Pawn[] = [];
     for (let x = 0; x < BOARD_SIZE; x++) {
       pawns.push({
@@ -135,6 +139,15 @@ const App: React.FC = () => {
         winReason: winResult.reason,
         moveHistory: [log, ...gameState.moveHistory],
       });
+
+      if (userEmail) {
+        const isHumanWin = winResult.winner === Player.WHITE;
+        const captured = newScores[Player.WHITE];
+        const lost = newScores[Player.BLACK];
+
+        StatsService.recordGameResult(userEmail, isHumanWin, captured, lost);
+      }
+
       return;
     }
 
@@ -153,33 +166,18 @@ const App: React.FC = () => {
       if (gameState.currentPlayer === Player.WHITE) {
         nextPlayer = Player.BLACK;
       } else {
-        // End of Black's turn -> Go to Spawning (Skip March)
         nextPhase = Phase.SPAWNING;
         nextPlayer = Player.WHITE;
-
-        // Prepare spawn queue for next round
-        const pawnsToSpawn = gameState.config.pawnsPerSpawn;
-
-        // We need to update state differently here because we are skipping performAdvancement
-        // But wait, executeMove sets state. We need to handle the phase transition correctly.
-        // Actually, if we skip 'The March', we should trigger the "Start of Next Round" logic here.
-
-        // Let's modify the logic below to handle the round transition immediately
       }
     }
 
-    // Logic shift: If it's end of round (Black finished), we need to set up Spawning
     let newSpawnQueue = gameState.spawnQueue;
     let newRound = gameState.currentRound;
 
     if (nextPhase === Phase.SPAWNING) {
-      // Start new round
       newRound += 1;
       const pawnsToSpawn = gameState.config.pawnsPerSpawn;
       newSpawnQueue = { [Player.WHITE]: pawnsToSpawn, [Player.BLACK]: pawnsToSpawn };
-
-      // Note: In original code, performAdvancement did round increment.
-      // Now we do it here.
     }
 
     setGameState({
@@ -202,8 +200,6 @@ const App: React.FC = () => {
   useEffect(() => {
     if (!gameState) return;
     if (gameState.phase === Phase.ADVANCEMENT) {
-      // Deprecated phase, but keeping check just in case state gets weird, 
-      // forcing a move to spawning if it happens.
       setGameState({ ...gameState, phase: Phase.SPAWNING });
       return;
     }
@@ -260,8 +256,17 @@ const App: React.FC = () => {
   const autoSpawn = (player: Player) => {
     if (!gameState) return;
     const count = gameState.spawnQueue[player];
-    const newBoard = spawnRandomly(gameState.board, player, count);
-    finishSpawnTurn(newBoard, player);
+
+    // Smart AI Spawn
+    // Use the new AI function to find best spots
+    const bestSpots = AI.getBestSpawnLocations(gameState.board, player, count);
+
+    let currentBoard = [...gameState.board];
+    bestSpots.forEach(pos => {
+      currentBoard.push({ id: uuidv4(), owner: player, position: pos, isNew: true, hasMoved: false });
+    });
+
+    finishSpawnTurn(currentBoard, player);
   };
 
   const handleManualSpawn = (pos: Position) => {
